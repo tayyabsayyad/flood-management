@@ -20,7 +20,9 @@ function markerColor(mag) {
 
 
 // Store our API endpoint inside queryUrl
-var queryUrl = "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_week.geojson";
+//var queryUrl = "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_week.geojson";
+
+var queryUrl = "https://raw.githubusercontent.com/tayyabsayyad/flood-management/main/assets/geojson/BMC_Wards.geojson";
 
 
 API_plates = "https://raw.githubusercontent.com/fraxen/tectonicplates/master/GeoJSON/PB2002_boundaries.json"
