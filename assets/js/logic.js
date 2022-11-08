@@ -20,26 +20,23 @@ function markerColor(mag) {
 
 
 // Store our API endpoint inside queryUrl
-//var queryUrl = "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_week.geojson";
+var queryUrl = "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_week.geojson";
 
-var queryUrl = "https://raw.githubusercontent.com/tayyabsayyad/flood-management/main/assets/geojson/BMC_Wards_New.json";
+Mumbai_Wards = "https://raw.githubusercontent.com/tayyabsayyad/flood-management/main/assets/geojson/BMC_Wards_New.geojson";
 
+Mumbai_Flood_Locations = "https://raw.githubusercontent.com/tayyabsayyad/flood-management/main/assets/geojson/BMC_Wards_New.geojson";
 
-API_plates = "https://raw.githubusercontent.com/fraxen/tectonicplates/master/GeoJSON/PB2002_boundaries.json"
+var mapOverLayes = new L.LayerGroup();
 
-
-
-var plateBoundary = new L.LayerGroup();
-
-d3.json(API_plates, function (geoJson) {
+d3.json(Mumbai_Wards, function (geoJson) {
    L.geoJSON(geoJson.features, {
        style: function (geoJsonFeature) {
            return {
-               weight: 2,
+               weight: 5,
                color: 'Red '
            }
        },
-   }).addTo(plateBoundary);
+   }).addTo(mapOverLayes);
 })
 
 
@@ -64,7 +61,6 @@ function createFeatures(earthquakeData) {
   var earthquakes = L.geoJSON(earthquakeData, {
     onEachFeature: onEachFeature
   });
-
   
 
   var earthquakeMarkers = [];
@@ -136,9 +132,6 @@ function createMap(earthquakes) {
   
   // Define a baseMaps object to hold our base layers
   var baseMaps = {
-    "Satellite Map": satellite,
-    "Gray Scale Map": grayscale,
-    "Outdors Map": outdors,
     "Open Street Map":osm,
     "Google Map":googleMap,
     "Google Sattelite":googleSat,
@@ -157,7 +150,7 @@ function createMap(earthquakes) {
   // Create overlay object to hold our overlay layer
   var overlayMaps = {
     "Earthquakes": earthquakes,
-    "Plates Boundary": plateBoundary,
+    "Wards Boundary": mapOverLayes,
   };
 
   // Create our map, giving it the streetmap and earthquakes layers to display on load
