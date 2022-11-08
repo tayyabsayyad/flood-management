@@ -1,17 +1,15 @@
-// Logic for Earthquake Map
-
 
 // Function to handle marker change colors
-function markerColor(mag) {
-  if (mag <= 1) {
+function markerColor(intensity) {
+  if (intensity <= 1) {
       return "#ADFF2F";
-  } else if (mag <= 2) {
+  } else if (intensity <= 2) {
       return "#9ACD32";
-  } else if (mag <= 3) {
+  } else if (intensity <= 3) {
       return "#FFFF00";
-  } else if (mag <= 4) {
+  } else if (intensity <= 4) {
       return "#ffd700";
-  } else if (mag <= 5) {
+  } else if (intensity <= 5) {
       return "#FFA500";
   } else {
       return "#FF0000";
@@ -20,11 +18,11 @@ function markerColor(mag) {
 
 
 // Store our API endpoint inside queryUrl
-var queryUrl = "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_week.geojson";
+//var queryUrl = "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_week.geojson";
+
+var queryUrl = "https://raw.githubusercontent.com/tayyabsayyad/flood-management/main/assets/geojson/flooded_areas.geojson"
 
 Mumbai_Wards = "https://raw.githubusercontent.com/tayyabsayyad/flood-management/main/assets/geojson/BMC_Wards_New.geojson";
-
-Mumbai_Flood_Locations = "https://raw.githubusercontent.com/tayyabsayyad/flood-management/main/assets/geojson/BMC_Wards_New.geojson";
 
 var mapOverLayes = new L.LayerGroup();
 
@@ -32,7 +30,7 @@ d3.json(Mumbai_Wards, function (geoJson) {
    L.geoJSON(geoJson.features, {
        style: function (geoJsonFeature) {
            return {
-               weight: 5,
+               weight: 2,
                color: 'Red '
            }
        },
@@ -46,54 +44,46 @@ d3.json(queryUrl, function(data) {
   createFeatures(data.features);
 });
 
-function createFeatures(earthquakeData) {
+function createFeatures(floodData) {
 
   // Define a function we want to run once for each feature in the features array
   // Give each feature a popup describing the place and time of the earthquake
   function onEachFeature(feature, layer) {
-    layer.bindPopup("<h3>" + feature.properties.place +
-      "</h3><hr><p>" + new Date(feature.properties.time) + "</p>");
+    layer.bindPopup("<h3>" + feature.properties.name +
+      "</h3><hr><p>" + feature.properties.intensity + "</p>");
   }
 
 
   // Create a GeoJSON layer containing the features array on the earthquakeData object
   // Run the onEachFeature function once for each piece of data in the array
-  var earthquakes = L.geoJSON(earthquakeData, {
+  var flood = L.geoJSON(floodData, {
     onEachFeature: onEachFeature
   });
   
 
-  var earthquakeMarkers = [];
+  var floodMarkers = [];
 
-  for (var i = 0; i < earthquakeData.length; i++) {
-    //markerColor(earthquakeData[i].properties.mag);
-    earthquakeMarkers.push(L.circle([earthquakeData[i].geometry.coordinates[1],earthquakeData[i].geometry.coordinates[0]], {
+  for (var i = 0; i < floodData.length; i++) {
+    floodMarkers.push(L.circle([floodData[i].geometry.coordinates[1],floodData[i].geometry.coordinates[0]], {
       fillOpacity: 0.75,
-      color: markerColor(earthquakeData[i].properties.mag),
-      fillColor: markerColor(earthquakeData[i].properties.mag),
+      color: markerColor(floodData[i].properties.intensity),
+      fillColor: markerColor(floodData[i].properties.intensity),
       // Adjust radius
-      radius: earthquakeData[i].properties.mag * 30000 
-    }).bindPopup("<h1>Hello</h3>") 
+      radius: floodData[i].properties.intensity * 100 
+    }).bindPopup("Area :"+ floodData[i].properties.name+ "<br>"+"Intensity :"+floodData[i].properties.intensity) 
     )
 
     // Now we can handle them as one group instead of referencing each individually
-    var earthquakeLayer = L.layerGroup(earthquakeMarkers);
-  }
+    var floodLayer = L.layerGroup(floodMarkers);
+    }
 
     
     // Sending our earthquakes layer to the createMap function  
-    createMap(earthquakeLayer);
+    createMap(floodLayer);
   }
     
 
-function createMap(earthquakes) {
-
-  // Define streetmap and darkmap layers
-  var satellite = L.tileLayer("", {
-    attribution: "Map data &copy; <a href=\"https://www.openstreetmap.org/\">OpenStreetMap</a> contributors, <a href=\"https://creativecommons.org/licenses/by-sa/2.0/\">CC-BY-SA</a>, Imagery © <a href=\"https://www.mapbox.com/\">Mapbox</a>",
-    maxZoom: 18,
-    id: "mapbox.satellite"
-  });
+function createMap(flood) {
 
  var osm = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
@@ -115,21 +105,7 @@ function createMap(earthquakes) {
     });
 
 
-  var grayscale = L.tileLayer("https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={pk.eyJ1IjoidGF5eWFic2F5eWFkMjM2IiwiYSI6ImNsOWpxbWRkaDBheWgzd3A5a21hdjZ3dWoifQ.aXSE2qC-HuyTCW3V8MO52Q}", {
-    attribution: "Map data &copy; <a href=\"https://www.openstreetmap.org/\">OpenStreetMap</a> contributors, <a href=\"https://creativecommons.org/licenses/by-sa/2.0/\">CC-BY-SA</a>, Imagery © <a href=\"https://www.mapbox.com/\">Mapbox</a>",
-    maxZoom: 18,
-    id: "mapbox.light",
-    accessToken: "pk.eyJ1IjoidGF5eWFic2F5eWFkMjM2IiwiYSI6ImNsOWpxbWRkaDBheWgzd3A5a21hdjZ3dWoifQ.aXSE2qC-HuyTCW3V8MO52Q"
-  });
-
-  var outdors = L.tileLayer("https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={pk.eyJ1IjoidGF5eWFic2F5eWFkMjM2IiwiYSI6ImNsOWpxbWRkaDBheWgzd3A5a21hdjZ3dWoifQ.aXSE2qC-HuyTCW3V8MO52Q}", {
-    attribution: "Map data &copy; <a href=\"https://www.openstreetmap.org/\">OpenStreetMap</a> contributors, <a href=\"https://creativecommons.org/licenses/by-sa/2.0/\">CC-BY-SA</a>, Imagery © <a href=\"https://www.mapbox.com/\">Mapbox</a>",
-    maxZoom: 18,
-    id: "mapbox.outdoors",
-    accessToken: "pk.eyJ1IjoidGF5eWFic2F5eWFkMjM2IiwiYSI6ImNsOWpxbWRkaDBheWgzd3A5a21hdjZ3dWoifQ.aXSE2qC-HuyTCW3V8MO52Q"
-  });
-
-  
+ 
   // Define a baseMaps object to hold our base layers
   var baseMaps = {
     "Open Street Map":osm,
@@ -149,7 +125,7 @@ function createMap(earthquakes) {
 
   // Create overlay object to hold our overlay layer
   var overlayMaps = {
-    "Earthquakes": earthquakes,
+     "Flood Areas": flood,
     "Wards Boundary": mapOverLayes,
   };
 
